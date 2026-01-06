@@ -11,7 +11,7 @@ const collection = admin.firestore().collection('GERENCIAS');
 // Criar gerencia
 router.post('/', authenticate, async (req, res) => {
   const data = req.body as Gerencia;
-  if (!data.idContrato || !data.nome) {
+  if (!data.contrato || !data.nome) {
     return res.status(400).json({ error: 'Número do contrato e|ou nome ausentes' });
   }
 

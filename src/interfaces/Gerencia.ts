@@ -4,5 +4,5 @@ export default interface Gerencia {
     aprovador: string;
     colaboradores: number;
     fluxoCompleto: boolean;
-    idContrato: string;
+    contrato: string;
 }
