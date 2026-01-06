@@ -16,8 +16,8 @@ router.post('/', authenticate, async (req, res) => {
   }
 
   try {
-    const ref = await collection.add(data);
-    res.status(201).json({ message: 'Contrato criado com sucesso', id: ref.id });
+    await collection.doc(data.nroContrato).set(data);
+    res.status(201).json({ message: 'Contrato criado com sucesso' });
   } catch (error) {
     res.status(400).json({ error: 'Erro ao criar contrato', details: error });
   }
@@ -32,7 +32,8 @@ router.get('/', authenticate, async (req, res) => {
           nroContrato: doc.id,
           saldoContratual: doc.data().saldoContratual,
           valorContrato: doc.data().valorContrato,
-          reajuste: doc.data().reajuste ?? undefined
+          reajuste: doc.data().reajuste ?? undefined,
+          agentes: doc.data().agentes 
         }));
     res.json(contratos);
   } catch (error) {
@@ -49,21 +50,6 @@ router.get('/:id', authenticate, async (req, res) => {
     res.json({ id: doc.id, ...doc.data() });
   } catch (error) {
     res.status(500).json({ error: 'Erro ao buscar contrato', details: error });
-  }
-});
-
-//Buscar agentes do contrato
-router.get('/:id/agentes', authenticate, async (req, res) => {
-    const { id } = req.params;
-    try {
-    const snapshot = await admin.firestore().collection('agentes').where('nroContrato', '==', id).get();
-    const agentes: AgentesContrato[] = snapshot.docs.map(doc => ({
-          id: doc.id,
-          ...(doc.data() as Omit<AgentesContrato, 'id'>),
-        }));
-    res.json(agentes);
-  } catch (error) {
-    res.status(500).json({ error: 'Erro ao listar agentes do contrato ', details: error });
   }
 });
 

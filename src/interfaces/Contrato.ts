@@ -4,11 +4,10 @@ export default interface Contrato {
     saldoContratual: number;
     valorContrato: number;
     reajuste?: number;
+    agentes: AgentesContrato;
 }
 
 export interface AgentesContrato {
-    id?: string;
-    nroContrato: string;
     preposto: Agente;
     interno: Agente;
     financeiro: Agente;
