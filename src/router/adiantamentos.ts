@@ -6,7 +6,7 @@ import Adiantamento from '../interfaces/Adiantamento';
 
 const router = Router();
 
-const collection = admin.firestore().collection('adiantamentos');
+const collection = admin.firestore().collection('ADIANTAMENTOS');
 
 // Criar adiantamento
 router.post('/', authenticate, async (req, res) => {

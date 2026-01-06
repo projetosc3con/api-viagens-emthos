@@ -6,7 +6,7 @@ import Gerencia from '../interfaces/Gerencia';
 
 const router = Router();
 
-const collection = admin.firestore().collection('gerencias');
+const collection = admin.firestore().collection('GERENCIAS');
 
 // Criar gerencia
 router.post('/', authenticate, async (req, res) => {

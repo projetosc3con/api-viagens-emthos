@@ -1,5 +1,5 @@
 export default interface Viagem {
-    id: number;
+    id: number | string;
     status: string;
     origem: string;
     destino: string;

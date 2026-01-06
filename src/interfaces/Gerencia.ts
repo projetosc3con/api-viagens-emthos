@@ -1,5 +1,5 @@
 export default interface Gerencia {
-    idDoc?: string;
+    id?: string;
     nome: string;
     aprovador: string;
     colaboradores: number;

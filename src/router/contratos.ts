@@ -6,7 +6,7 @@ import Contrato, { AgentesContrato, Agente } from '../interfaces/Contrato';
 
 const router = Router();
 
-const collection = admin.firestore().collection('contratos');
+const collection = admin.firestore().collection('CONTRATOS');
 
 // Criar contrato
 router.post('/', authenticate, async (req, res) => {
