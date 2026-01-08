@@ -3,6 +3,7 @@ import { Router } from 'express';
 import { authenticate } from '../middlewares/authenticate';
 import { admin } from '../firebase';
 import Viagem from '../interfaces/Viagem';
+import { viagemService } from '../services/viagem';
 
 const router = Router();
 
@@ -10,16 +11,15 @@ const collection = admin.firestore().collection('VIAGENS');
 
 // Criar viagem
 router.post('/', authenticate, async (req, res) => {
-  const data = req.body as Viagem;
-  if (!data.colaborador || !data.contrato) {
-    return res.status(400).json({ error: 'Dados ausentes' });
-  }
-
   try {
-    const ref = await collection.add(data);
-    res.status(201).json({ message: 'Viagem criada com sucesso', id: ref.id });
+    const data = req.body as Viagem;
+
+    const result = await viagemService.create(data);
+    return res.status(201).json(result);
   } catch (error) {
-    res.status(400).json({ error: 'Erro ao criar viagem', details: error });
+    return res.status(400).json({
+      error: error instanceof Error ? error.message : 'Erro ao criar viagem'
+    });
   }
 });
 
