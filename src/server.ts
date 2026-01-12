@@ -5,6 +5,8 @@ import adiantamentoRoutes from './router/adiantamentos';
 import contratoRoutes from './router/contratos';
 import gerenciaRoutes from './router/gerencias';
 import viagemRoutes from './router/viagens';
+import emailsRoutes from './router/emails';
+import usuariosRoutes from './router/usuarios';
 
 dotenv.config();
 
@@ -17,5 +19,7 @@ app.use('/adiantamentos', adiantamentoRoutes);
 app.use('/contratos', contratoRoutes);
 app.use('/gerencias', gerenciaRoutes);
 app.use('/viagens', viagemRoutes);
+app.use('/emails', emailsRoutes);
+app.use('/usuarios', usuariosRoutes);
 
-export default app; 
+export default app;

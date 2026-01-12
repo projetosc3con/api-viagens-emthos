@@ -5,6 +5,14 @@ export default interface Usuario {
     nomeCompleto: string;
     nomeAbreviado: string;
     nivelAcesso: string;
-    gerenciaCliente: string;
-    matriculaEmthos: string;
+    gerenciaPb: string;
+    matriculaEmthos?: string;
+    contrato: string;
 }
+
+export const nomeAbreviado = (fullName: string): string => {
+  const parts = fullName.trim().split(/\s+/);
+  return parts.length <= 2
+    ? fullName
+    : [parts[0], parts[parts.length - 1]].join(' ');
+};

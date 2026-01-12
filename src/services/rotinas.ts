@@ -112,18 +112,17 @@ export default class Rotinas {
                                 </head>
                                 <body>
                                     <div class="background-overlay"></div>
-                                        <div class="container">
-                                            <h2 style="margin-top:0;">Olá,</h2>
-                                            <p>Viagem de ${viagemDoc.data().origem} para ${viagemDoc.data().destino}
-                                            concluída, agora basta inserir a prestação de contas no sistema:</p>
-                                            <div class="button-group">
-                                                <a
-                                                    href="https://viagens-emthos.web.app/viagens/${viagemId}/prestacao"
-                                                    class="btn-confirm"
-                                                >
-                                                    Prestação de contas
-                                                </a>
-                                            </div>
+                                    <div class="container">
+                                        <h2 style="margin-top:0;">Olá,</h2>
+                                        <p>Viagem de ${viagemDoc.data().origem} para ${viagemDoc.data().destino}
+                                        concluída, agora basta inserir a prestação de contas no sistema:</p>
+                                        <div class="button-group">
+                                            <a
+                                                href="https://viagens-emthos.web.app/viagens/${viagemId}/prestacao"
+                                                class="btn-confirm"
+                                            >
+                                                Prestação de contas
+                                            </a>
                                         </div>
                                     </div>
                                 </body>
