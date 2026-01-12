@@ -9,7 +9,7 @@ const router = Router();
 
 const db = admin.firestore();
 
-router.patch('/handleraprovacao', async (req, res) => {
+router.get('/handleraprovacao', async (req, res) => {
     const docId = String(req.query.docId || "");
     const action = String(req.query.action || "").toLowerCase();
 
@@ -370,7 +370,7 @@ router.patch('/handleraprovacao', async (req, res) => {
     }
 });
 
-router.patch('/handlervaloradiantado', async(req, res) => {
+router.get('/handlervaloradiantado', async(req, res) => {
   const docId = String(req.query.docId || "");
 
   if (!docId) {
@@ -587,7 +587,7 @@ router.patch('/handlervaloradiantado', async(req, res) => {
   }
 });
 
-router.patch('/handlerdescontoreembolso', async(req, res) => {
+router.get('/handlerdescontoreembolso', async(req, res) => {
   const docId = String(req.query.docId || "");
   const acao = String(req.query.acao || "");
 
