@@ -24,14 +24,14 @@ router.post('/', async (req, res) => {
 }); 
 
 //inativar usuario
-router.post('/inativar/:uid', authenticate, async (req, res) => {
-  const { uid } = req.params;
+router.post('/inativar/:id', authenticate, async (req, res) => {
+  const { id } = req.params;
   try {
-    await admin.auth().updateUser(uid, { disabled: true });
-    const snapshot = await collection.where('uid', '==', uid).get();
-    for (const doc of snapshot.docs) {
-      await doc.ref.update({ inativo: true });
+    const userRef = await collection.doc(id).get();
+    if (userRef.data().uid !== 'Pendente') {
+      await admin.auth().updateUser(userRef.data().uid, { disabled: true });
     }
+    await collection.doc(id).update({ inativo: true });
     res.status(200).json({ message: 'Usuário inativado com sucesso' });
   } catch (error) {
     res.status(400).json({ error: 'Erro ao inativar usuario', details: error });
