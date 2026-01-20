@@ -24,7 +24,7 @@ router.post('/', async (req, res) => {
 }); 
 
 //inativar usuario
-router.post('/inativar/:id', authenticate, async (req, res) => {
+router.put('/inativar/:id', authenticate, async (req, res) => {
   const { id } = req.params;
   try {
     const userRef = await collection.doc(id).get();
@@ -35,6 +35,21 @@ router.post('/inativar/:id', authenticate, async (req, res) => {
     res.status(200).json({ message: 'Usuário inativado com sucesso' });
   } catch (error) {
     res.status(400).json({ error: 'Erro ao inativar usuario', details: error });
+  }
+});
+
+//ativar usuario
+router.put('/ativar/:id', authenticate, async (req, res) => {
+  const { id } = req.params;
+  try {
+    const userRef = await collection.doc(id).get();
+    if(userRef.data().uid !== 'Pendente') {
+      await admin.auth().updateUser(userRef.data().uid, { disabled: false });
+    }
+    await collection.doc(id).update({ inativo: false });
+    res.status(200).json({ message: 'Usuário ativado com sucesso' });
+  } catch (error) {
+    res.status(400).json({ error: 'Erro ao ativar usuário', details: error });
   }
 });
 
