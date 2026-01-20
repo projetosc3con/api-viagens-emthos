@@ -8,6 +8,7 @@ export default interface Usuario {
     gerenciaPb: string;
     matriculaEmthos?: string;
     contrato: string;
+    inativo?: boolean;
 }
 
 export const nomeAbreviado = (fullName: string): string => {

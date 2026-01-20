@@ -810,4 +810,216 @@ router.get('/handlerdescontoreembolso', async(req, res) => {
   }
 });
 
+router.get('/handleraprovaradiantamento', async(req, res) => {
+  const docId = String(req.query.docId || "");
+
+  if (!docId) {
+    res.status(400).send("Parâmetros obrigatórios faltando");
+    return;
+  }
+
+  try {
+    // lê dados da viagem
+    const viagemRef = db.collection("VIAGENS").doc(docId);
+    const viagemSnap = await viagemRef.get();
+    const viagem = viagemSnap.data() as Viagem;
+    if (!viagem) {
+      res.status(500).send("Viagem não encontrada");
+      return;
+    }
+    const snapshot = await db.collection("CONTRATOS").doc(viagem.contrato).get();
+    const contrato = snapshot.data() as Contrato;
+    
+    if (!contrato) {
+      res.status(500).send("Não foi possivel obter os agentes do contrato");
+      return;
+    }
+
+    await db.collection("mail").add({
+      to: [contrato.agentes.financeiro.email, contrato.agentes.suplenteFinanceiro.email],
+      idViagem: viagem.id,
+      acaoViagem: "Adiantamento",
+      statusViagem: "Adiantamento enviado",
+      agenteViagem: contrato.agentes.preposto.email,
+      message: {
+        subject: `Adiantamento validado pelo preposto - viagem ID ${docId} contrato ${viagem.contrato}`,
+        text: "",
+        html: `
+          <!DOCTYPE html>
+          <html>
+            <head>
+              <meta charset="UTF-8" />
+              <link
+              href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap"
+              rel="stylesheet"
+              />
+              <style>
+                body {
+                  font-family: 'Roboto', sans-serif;
+                  margin: 0;
+                  background-position: center center;
+                  background-repeat: no-repeat;
+                  background-size: cover;
+                  position: relative;
+                  background-image: url(https://firebasestorage.googleapis.com/v0/b/viagens-emthos.firebasestorage.app/o/assets%2Fbackground-emthos.jpeg?alt=media&token=affc8676-313d-483b-b5e4-e57149c9867e);    
+                  padding: 0;
+                  color: #333;
+                }
+                .background-overlay {
+                  background-color: #fff0;
+                  background-image: linear-gradient(81deg, #363636ff 0%, #4e4b4bff 100%);
+                  opacity: .25;
+                  transition: background 0.3s, border-radius 0.3s, opacity 0.3s;
+                  inset: 0;
+                  position: absolute;
+                }
+                .container {
+                  width: 600px;
+                  margin: 32px auto;
+                  background: #fff;
+                  border-radius: 8px;
+                  padding: 24px;
+                }
+                .info-table {
+                  width: 100%;
+                  border-collapse: collapse;
+                  margin-bottom: 16px;
+                }
+                .btn-confirm {
+                  display: inline-block;
+                  padding: 12px 24px;
+                  margin: 16px 0;
+                  background-color: #007bff;
+                  color: #ffffff !important;
+                  text-decoration: none;
+                  border-radius: 4px;
+                  font-weight: 700;
+                  margin-right: 12px;
+                }
+                .button-group {
+                  display: flex;
+                }
+                .info-table th,
+                .info-table td {
+                  text-align: left;
+                  padding: 8px;
+                  border-bottom: 1px solid #ddd;
+                }
+                .info-table th {
+                  width: 30%;
+                  font-weight: 700;
+                }
+              </style>
+            </head>
+            <body>
+              <div class="background-overlay"></div>
+              <div class="container">
+                <h2 style="margin-top:0;">Olá,</h2>
+                <p>Adiantamento da viagem de ${viagem.origem} para ${viagem.destino} validado pelo preposto</p>
+                <table class="info-table">
+                  <tr>
+                    <th>Contrato:</th>
+                    <td>${viagem.contrato}</td>
+                  </tr>
+                  <tr>
+                    <th>Colaborador:</th>
+                    <td>${viagem.colaborador}</td>
+                  </tr>
+                  <tr>
+                    <th>Origem:</th>
+                    <td>${viagem.origem}</td>
+                  </tr>
+                  <tr>
+                    <th>Destino:</th>
+                    <td>${viagem.destino}</td>
+                  </tr>
+                  <tr>
+                    <th>Data de Ida:</th>
+                    <td>${viagem.dataIda}</td>
+                  </tr>
+                  <tr>
+                    <th>Data de Volta:</th>
+                    <td>${viagem.dataVolta}</td>
+                  </tr>
+                </table>
+                <div class="button-group">
+                  <a href="https://api-viagens-emthos.vercel.app/emails/handleraprovaradiantamento?docId=${docId}" class="btn-confirm" >
+                    Registrar como valor adiantado
+                  </a>
+                </div>
+              </div>
+            </body>
+          </html>
+        `,
+      },
+    });
+
+    // tela de confirmacao para o aprovador
+    res.send(`
+      <!DOCTYPE html>
+      <html lang="pt-BR">
+        <head>
+          <meta charset="UTF-8" />
+          <title>Viagens Emthos</title>
+          <style>
+            html, body {
+              margin: 0;
+              padding: 0;
+              height: 100%;
+            }
+            body {
+              font-family: 'Roboto', sans-serif;
+              margin: 0;
+              background-position: center center;
+              background-repeat: no-repeat;
+              background-size: cover;
+              position: relative;
+              background-image: url(https://firebasestorage.googleapis.com/v0/b/viagens-emthos.firebasestorage.app/o/assets%2Fbackground-emthos.jpeg?alt=media&token=affc8676-313d-483b-b5e4-e57149c9867e);    
+              padding: 0;
+              color: #333;
+            }
+            .background-overlay {
+              background-color: #fff0;
+              background-image: linear-gradient(81deg, #363636ff 0%, #4e4b4bff 100%);
+              opacity: .25;
+              transition: background 0.3s, border-radius 0.3s, opacity 0.3s;
+              inset: 0;
+              position: absolute;
+            }
+            .container {
+              position: relative;
+              width: 100%;
+              height: 100%;
+              display: flex;
+              justify-content: center;
+              align-items: center;
+            }
+            .content {
+              background: #444;
+              padding: 1rem;
+              border-radius: 6px;
+              max-height: 50px;
+              color: #fff;
+              text-align: center;
+            }
+          </style>
+        </head>
+        <body>
+          <div class="background-overlay"></div>
+          <div class="container">
+            <div class="content">
+              <h1>Adiantamento validado para Viagem de ID ${docId}</h1>
+            </div>
+          </div>
+        </body>
+      </html>`
+    );
+    return;
+  } catch (err: any) {
+    console.error("Erro ao atualizar status:", err);
+    res.status(500).send("Erro interno ao atualizar status: "+err.message);
+    return;
+  }
+});
+
 export default router;

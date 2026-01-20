@@ -24,5 +24,6 @@ export default interface Viagem {
     obsProgramador?: string;
     anexoAprovacao?: string;
     nroRelatorio?: number;
+    meiaDiaria?: string; /*'nenhuma' | 'ida' | 'volta' | 'ida e volta'*/
     justificativa: string;
 }
