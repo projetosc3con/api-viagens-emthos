@@ -941,9 +941,13 @@ router.get('/handleraprovaradiantamento', async(req, res) => {
                     <th>Data de Volta:</th>
                     <td>${viagem.dataVolta}</td>
                   </tr>
+                  <tr>
+                    <th>Valor do adiantamento:</th>
+                    <td>R$ ${viagem.valorAdiantamento}</td>
+                  </tr>
                 </table>
                 <div class="button-group">
-                  <a href="https://api-viagens-emthos.vercel.app/emails/handleraprovaradiantamento?docId=${docId}" class="btn-confirm" >
+                  <a href="https://api-viagens-emthos.vercel.app/emails/handlervaloradiantado?docId=${docId}" class="btn-confirm" >
                     Registrar como valor adiantado
                   </a>
                 </div>
