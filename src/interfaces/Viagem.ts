@@ -25,5 +25,7 @@ export default interface Viagem {
     anexoAprovacao?: string;
     nroRelatorio?: number;
     meiaDiaria?: string; /*'nenhuma' | 'ida' | 'volta' | 'ida e volta'*/
+    horaIda?: string;
+    horaVolta?: string;
     justificativa: string;
 }

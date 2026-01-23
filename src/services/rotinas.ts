@@ -1,9 +1,11 @@
 import { admin } from "../firebase";
+import Contrato from "../interfaces/Contrato";
+import Viagem from "../interfaces/Viagem";
 
 const db = admin.firestore();
 
 export default class Rotinas {
-    static async checarConclusaoInicio() {
+    static async checarViagens() {
         try {
             // 1) Formata a data de ontem como dd/MM/yyyy
             const hoje = new Date();
@@ -162,16 +164,9 @@ export default class Rotinas {
                 .where("status", "==", "Pendente financeiro")
                 .get();
 
-            const agenteSnap = await db.collection("AGENTES").get();
-            const financeiro = agenteSnap
-                .docs
-                .find((d) => d.id === "financeiro")?.data();
-
-            if (!financeiro) {
-                throw new Error("Dados obrigatórios não encontrados");
-            }
             
             for (const viagemDoc of pendenteFinanceiro.docs) {
+                const viagem = viagemDoc.data() as Viagem;
                 const snap = await db
                 .collection("PRESTACOES")
                 .where("idViagem", "==", viagemDoc.id)
@@ -179,13 +174,14 @@ export default class Rotinas {
 
                 if (!snap.empty) {
                     const prestacao = snap.docs[0].data();
-
+                    const cData = await db.collection("CONTRATOS").doc(viagem.contrato).get();
+                    const contrato = cData.data() as Contrato;
                     await db.collection("mail").add({
-                        to: [financeiro.email],
+                        to: [contrato.agentes.financeiro.email],
                         idViagem: viagemDoc.id,
                         acaoViagem: "Pendente financeiro",
                         statusViagem: "Pendente financeiro",
-                        agenteViagem: financeiro.nome,
+                        agenteViagem: contrato.agentes.financeiro.nome,
                         message: {
                         subject: `Viagem ID ${viagemDoc.id} pendente financeiro`,
                         text: "",
@@ -259,7 +255,7 @@ export default class Rotinas {
                             <body>
                             <div class="background-overlay"></div>
                             <div class="container">
-                            <h2 style="margin-top:0;">Olá ${financeiro.nome},</h2>
+                            <h2 style="margin-top:0;">Olá ${contrato.agentes.financeiro.nome},</h2>
                             <p>
                             ${prestacao.valorDiferenca > 0 ?
                                 "Programar desconto no valor de R$ " + prestacao.valorDiferenca:
@@ -308,6 +304,21 @@ export default class Rotinas {
                     });
                 }
             }
+
+            //VERIFICA CONCLUSAO
+            const pendenteConclusao = await db
+            .collection("VIAGENS")
+            .where("status", "in", ['Desconto programado', 'Reembolso programado'])
+            .get();
+            for (const viagemDoc of pendenteConclusao.docs) {
+                const viagem = viagemDoc.data() as Viagem;
+                if (this.passouDezDias(viagem.dataVolta)) {
+                    await viagemDoc.ref.update({
+                        status: "Concluída",
+                    });
+                }
+            }
+            
         } catch (err: any) {
             console.error(err);
             throw new Error("Erro ao executar: " + err.message);
@@ -402,5 +413,18 @@ export default class Rotinas {
                             `,
                         },
                     });
+    }
+
+    static parseDataBr(data: string): Date {
+        const [dia, mes, ano] = data.split('/').map(Number);
+        return new Date(ano, mes - 1, dia);
+    }
+
+    static passouDezDias(dataVolta: string): boolean {
+        const dataConvertida = this.parseDataBr(dataVolta);
+        const hoje = new Date();
+        const diffMs = hoje.getTime() - dataConvertida.getTime();
+        const diffDias = diffMs / (1000 * 60 * 60 * 24);
+        return diffDias >= 10;
     }
 }

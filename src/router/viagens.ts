@@ -23,6 +23,19 @@ router.post('/', authenticate, async (req, res) => {
   }
 });
 
+router.post('/passivosms', async (req, res) => {
+  try {
+    const data = req.body as Viagem;
+    const snapshot = await collection.count().get();
+    const nextID = (snapshot.data().count) + 1;
+
+    await collection.doc(nextID.toString()).set(data);
+    res.status(201).json({ message: 'Viagem criada com sucesso' });
+  } catch (error) {
+    return res.status(400).json({ message: 'Erro'});
+  }
+});
+
 // Listar gerencias
 router.get('/', authenticate, async (req, res) => {
   try {

@@ -922,6 +922,10 @@ router.get('/handleraprovaradiantamento', async(req, res) => {
                     <td>${viagem.contrato}</td>
                   </tr>
                   <tr>
+                      <th>Centro de custo:</th>
+                      <td>${viagem.contrato === '4600685412' ? '53' : '47'}</td>
+                  </tr>
+                  <tr>
                     <th>Colaborador:</th>
                     <td>${viagem.colaborador}</td>
                   </tr>
