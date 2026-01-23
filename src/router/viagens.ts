@@ -28,8 +28,32 @@ router.post('/passivosms', async (req, res) => {
     const data = req.body as Viagem;
     const snapshot = await collection.count().get();
     const nextID = (snapshot.data().count) + 1;
+    //add a viagem
+    await collection.doc(nextID.toString()).set({ ...data, id: nextID });
 
-    await collection.doc(nextID.toString()).set(data);
+    //gera o adiantamento
+    const dataIda = new Date(data.dataIda);
+    let totalA: number = 0;
+    const itens = Array.from({ length: data.duracao }, (_, i) => {
+      const dataRef = addDays(dataIda, i);
+      let valorDiaria = 65;
+      totalA = totalA + valorDiaria;
+      return {
+        alimentacao: valorDiaria,
+        deslocamento: 0,
+        lavanderia: 0,
+        total: valorDiaria,
+        dataReferencia: formatDateBR(dataRef),
+      };
+    });
+    //add o adiantamento
+    await admin.firestore().collection("ADIANTAMENTOS").add({
+      idDoc: '',
+      idViagem: nextID.toString(),
+      itens: itens,
+      totalAdiantamento: totalA
+    });
+
     res.status(201).json({ message: 'Viagem criada com sucesso' });
   } catch (error) {
     return res.status(400).json({ message: 'Erro'});
@@ -84,5 +108,19 @@ router.delete('/:id', authenticate, async (req, res) => {
     res.status(400).json({ error: 'Erro ao deletar Viagem', details: error });
   }
 });
+
+function addDays(date: Date, days: number): Date {
+  const result = new Date(date);
+  result.setDate(result.getDate() + days);
+  return result;
+}
+
+function formatDateBR(date: Date): string {
+  const dia = String(date.getDate()).padStart(2, '0');
+  const mes = String(date.getMonth() + 1).padStart(2, '0');
+  const ano = date.getFullYear();
+
+  return `${dia}/${mes}/${ano}`;
+}
 
 export default router;
