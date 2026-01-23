@@ -32,7 +32,7 @@ router.post('/passivosms', async (req, res) => {
     await collection.doc(nextID.toString()).set({ ...data, id: nextID });
 
     //gera o adiantamento
-    const dataIda = new Date(data.dataIda);
+    const dataIda = parseDateBR(data.dataIda);
     let totalA: number = 0;
     const itens = Array.from({ length: data.duracao }, (_, i) => {
       const dataRef = addDays(dataIda, i);
@@ -121,6 +121,13 @@ function formatDateBR(date: Date): string {
   const ano = date.getFullYear();
 
   return `${dia}/${mes}/${ano}`;
+}
+
+function parseDateBR(data: string): Date {
+  const [dia, mes, ano] = data.split('/').map(Number);
+
+  // mês começa em 0 no JS
+  return new Date(ano, mes - 1, dia);
 }
 
 export default router;
