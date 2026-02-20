@@ -4,6 +4,7 @@ import { Router } from "express";
 import Viagem from "../interfaces/Viagem";
 import Contrato from "../interfaces/Contrato";
 import Gerencia from "../interfaces/Gerencia";
+import Usuario from "../interfaces/Usuario";
 
 const router = Router();
 
@@ -830,7 +831,10 @@ router.get('/handleraprovaradiantamento', async(req, res) => {
     const snapshot = await db.collection("CONTRATOS").doc(viagem.contrato).get();
     const contrato = snapshot.data() as Contrato;
     
-    if (!contrato) {
+    const snapCol = await db.collection("USUARIO").doc(viagem.colaborador).get();
+    const colaborador = snapCol.data() as Usuario;
+
+    if (!contrato || !colaborador) {
       res.status(500).send("Não foi possivel obter os agentes do contrato");
       return;
     }
@@ -927,7 +931,7 @@ router.get('/handleraprovaradiantamento', async(req, res) => {
                   </tr>
                   <tr>
                     <th>Colaborador:</th>
-                    <td>${viagem.colaborador}</td>
+                    <td>${colaborador.nomeAbreviado}</td>
                   </tr>
                   <tr>
                     <th>Origem:</th>
@@ -948,6 +952,10 @@ router.get('/handleraprovaradiantamento', async(req, res) => {
                   <tr>
                     <th>Valor do adiantamento:</th>
                     <td>R$ ${viagem.valorAdiantamento}</td>
+                  </tr>
+                  <tr>
+                    <th>PIX:</th>
+                    <td>${colaborador.cpf}</td>
                   </tr>
                 </table>
                 <div class="button-group">
