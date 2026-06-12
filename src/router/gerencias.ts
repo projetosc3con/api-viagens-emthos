@@ -24,7 +24,7 @@ router.post('/', authenticate, async (req, res) => {
 });
 
 // Listar gerencias
-router.get('/', authenticate, async (req, res) => {
+router.get('/', async (req, res) => {
   try {
     const snapshot = await collection.get();
     const gerencias: Gerencia[] = snapshot.docs.map(doc => ({

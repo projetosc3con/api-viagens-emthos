@@ -9,7 +9,7 @@ const router = Router();
 const collection = admin.firestore().collection('ADIANTAMENTOS');
 
 // Criar adiantamento
-router.post('/', authenticate, async (req, res) => {
+router.post('/', async (req, res) => {
   const data = req.body as Adiantamento;
   if (!data.idViagem || !data.totalAdiantamento) {
     return res.status(400).json({ error: 'Dados obrigatórios ausentes' });
@@ -24,7 +24,7 @@ router.post('/', authenticate, async (req, res) => {
 });
 
 // Listar adiantamentos
-router.get('/', authenticate, async (req, res) => {
+router.get('/', async (req, res) => {
   try {
     const snapshot = await collection.get();
     const adiantamentos: Adiantamento[] = snapshot.docs.map(doc => ({

@@ -39,7 +39,7 @@ router.put('/inativar/:id', authenticate, async (req, res) => {
 });
 
 //ativar usuario
-router.put('/ativar/:id', authenticate, async (req, res) => {
+router.put('/ativar/:id', async (req, res) => {
   const { id } = req.params;
   try {
     const userRef = await collection.doc(id).get();
