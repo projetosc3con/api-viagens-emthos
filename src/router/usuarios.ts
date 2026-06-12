@@ -38,6 +38,19 @@ router.put('/inativar/:id', authenticate, async (req, res) => {
   }
 });
 
+// Listar usuarios
+router.get('/', async (req, res) => {
+  try {
+    const snapshot = await collection.get();
+    const usuarios: Usuario[] = snapshot.docs.map(doc => ({
+          ...doc.data() as Usuario
+        }));
+    res.json(usuarios);
+  } catch (error) {
+    res.status(500).json({ error: 'Erro ao listar usuarios', details: error });
+  }
+});
+
 //ativar usuario
 router.put('/ativar/:id', async (req, res) => {
   const { id } = req.params;
