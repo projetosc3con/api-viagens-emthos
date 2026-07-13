@@ -1,6 +1,5 @@
 // src/routes/prestacoes.ts
 import { Router } from 'express';
-import { authenticate } from '../middlewares/authenticate';
 import { admin } from '../firebase';
 import Prestacao from '../interfaces/Prestacao';
 
@@ -21,3 +20,5 @@ router.get('/', async (req, res) => {
     res.status(500).json({ error: 'Erro ao listar contratos', details: error });
   }
 });
+
+export default router;

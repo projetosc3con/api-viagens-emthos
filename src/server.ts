@@ -7,6 +7,7 @@ import gerenciaRoutes from './router/gerencias';
 import viagemRoutes from './router/viagens';
 import emailsRoutes from './router/emails';
 import usuariosRoutes from './router/usuarios';
+import prestacoesRoutes from './router/prestacoes';
 
 dotenv.config();
 
@@ -21,5 +22,6 @@ app.use('/gerencias', gerenciaRoutes);
 app.use('/viagens', viagemRoutes);
 app.use('/emails', emailsRoutes);
 app.use('/usuarios', usuariosRoutes);
+app.use('/prestacoes', prestacoesRoutes);
 
 export default app;
