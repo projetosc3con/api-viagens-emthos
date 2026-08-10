@@ -1,0 +1,33 @@
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = __importDefault(require("express"));
+const cors_1 = __importDefault(require("cors"));
+const dotenv_1 = __importDefault(require("dotenv"));
+const adiantamentos_1 = __importDefault(require("./router/adiantamentos"));
+const contratos_1 = __importDefault(require("./router/contratos"));
+const gerencias_1 = __importDefault(require("./router/gerencias"));
+const viagens_1 = __importDefault(require("./router/viagens"));
+const emails_1 = __importDefault(require("./router/emails"));
+const usuarios_1 = __importDefault(require("./router/usuarios"));
+const prestacoes_1 = __importDefault(require("./router/prestacoes"));
+dotenv_1.default.config();
+const app = (0, express_1.default)();
+const port = process.env.PORT || 3000;
+app.use((0, cors_1.default)());
+app.use(express_1.default.json());
+app.use('/adiantamentos', adiantamentos_1.default);
+app.use('/contratos', contratos_1.default);
+app.use('/gerencias', gerencias_1.default);
+app.use('/viagens', viagens_1.default);
+app.use('/emails', emails_1.default);
+app.use('/usuarios', usuarios_1.default);
+app.use('/prestacoes', prestacoes_1.default);
+app.get('/', (_req, res) => {
+    res.send('🔥 API rodando localmente!');
+});
+app.listen(port, () => {
+    console.log(`✅ Servidor local rodando em http://localhost:${port}`);
+});

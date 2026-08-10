@@ -1,69 +1,60 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 // src/routes/emails.ts
-import { admin } from "../firebase";
-import { Router } from "express";
-import Viagem from "../interfaces/Viagem";
-import Contrato from "../interfaces/Contrato";
-import Gerencia from "../interfaces/Gerencia";
-import Usuario from "../interfaces/Usuario";
-
-const router = Router();
-
-const db = admin.firestore();
-
+const firebase_1 = require("../firebase");
+const express_1 = require("express");
+const router = (0, express_1.Router)();
+const db = firebase_1.admin.firestore();
 router.get('/handleraprovacao', async (req, res) => {
     const docId = String(req.query.docId || "");
     const action = String(req.query.action || "").toLowerCase();
-
     if (!docId || !action) {
-      res.status(400).send("Parâmetros docId e action são obrigatórios");
-      return;
+        res.status(400).send("Parâmetros docId e action são obrigatórios");
+        return;
     }
-
-    let novoStatus: string;
+    let novoStatus;
     if (action === "approve") {
-      novoStatus = "Aprovada";
-    } else if (action === "reject") {
-      novoStatus = "Reprovada";
-    } else {
-      res
-        .status(400)
-        .send("Parâmetro action inválido (use approve ou reject)");
-      return;
+        novoStatus = "Aprovada";
     }
-
+    else if (action === "reject") {
+        novoStatus = "Reprovada";
+    }
+    else {
+        res
+            .status(400)
+            .send("Parâmetro action inválido (use approve ou reject)");
+        return;
+    }
     try {
-      // atualiza o status
-      const viagemRef = db.collection("VIAGENS").doc(docId);
-      await viagemRef.update({status: novoStatus});
-
-      // lê dados da viagem
-      const viagemSnap = await viagemRef.get();
-      const viagem = viagemSnap.data() as Viagem;
-      if (!viagem) {
-        res.status(500).send("Viagem não encontrada após atualização");
-        return;
-      }
-
-      const snapshot = await db.collection("CONTRATOS").doc(viagem.contrato).get();
-      const contrato = snapshot.data() as Contrato;
-      const gerSnap = await db.collection("GERENCIAS").where("nome", "==", String(viagem.gerencia)).limit(1).get();
-      const gerencia = gerSnap.docs[0].data() as Gerencia;
-      if (!contrato) {
-        res.status(500).send("Não foi possivel obter os agentes do contrato");
-        return;
-      }
-
-      // notificacao para colaborador e agente emthos
-      await db.collection("mail").add({
-        to: [viagem.colaborador, contrato.agentes.interno.email, contrato.agentes.preposto.email],
-        idViagem: viagem.id,
-        acaoViagem: "Aprovação",
-        statusViagem: novoStatus,
-        agenteViagem: gerencia.aprovador,
-        message: {
-          subject: `Viagem ID ${docId} para ${viagem.destino} - ${novoStatus}`,
-          text: "",
-          html: `
+        // atualiza o status
+        const viagemRef = db.collection("VIAGENS").doc(docId);
+        await viagemRef.update({ status: novoStatus });
+        // lê dados da viagem
+        const viagemSnap = await viagemRef.get();
+        const viagem = viagemSnap.data();
+        if (!viagem) {
+            res.status(500).send("Viagem não encontrada após atualização");
+            return;
+        }
+        const snapshot = await db.collection("CONTRATOS").doc(viagem.contrato).get();
+        const contrato = snapshot.data();
+        const gerSnap = await db.collection("GERENCIAS").where("nome", "==", String(viagem.gerencia)).limit(1).get();
+        const gerencia = gerSnap.docs[0].data();
+        if (!contrato) {
+            res.status(500).send("Não foi possivel obter os agentes do contrato");
+            return;
+        }
+        // notificacao para colaborador e agente emthos
+        await db.collection("mail").add({
+            to: [viagem.colaborador, contrato.agentes.interno.email, contrato.agentes.preposto.email],
+            idViagem: viagem.id,
+            acaoViagem: "Aprovação",
+            statusViagem: novoStatus,
+            agenteViagem: gerencia.aprovador,
+            message: {
+                subject: `Viagem ID ${docId} para ${viagem.destino} - ${novoStatus}`,
+                text: "",
+                html: `
             <!DOCTYPE html>
             <html>
               <head>
@@ -173,21 +164,20 @@ router.get('/handleraprovacao', async (req, res) => {
               </body>
             </html>
           `,
-        },
-      });
-
-      if (novoStatus === "Aprovada" && gerencia.fluxoCompleto) {
-        // notificacao para o agente petrobras
-        await db.collection("mail").add({
-          to: [contrato.agentes.cliente.email],
-          idViagem: viagem.id,
-          acaoViagem: "Aprovação",
-          statusViagem: novoStatus,
-          agenteViagem: contrato.agentes.cliente.email,
-          message: {
-            subject: `Viagem ID ${docId} - ${novoStatus}`,
-            text: "",
-            html: `
+            },
+        });
+        if (novoStatus === "Aprovada" && gerencia.fluxoCompleto) {
+            // notificacao para o agente petrobras
+            await db.collection("mail").add({
+                to: [contrato.agentes.cliente.email],
+                idViagem: viagem.id,
+                acaoViagem: "Aprovação",
+                statusViagem: novoStatus,
+                agenteViagem: contrato.agentes.cliente.email,
+                message: {
+                    subject: `Viagem ID ${docId} - ${novoStatus}`,
+                    text: "",
+                    html: `
               <!DOCTYPE html>
               <html>
                 <head>
@@ -293,7 +283,7 @@ router.get('/handleraprovacao', async (req, res) => {
                       &subject=${encodeURIComponent(`Triagem da viagem ID ${viagem.id}`)}
                       &bodyText=${encodeURIComponent(`Olá!
                       Seguem evidências de hospedagem ${viagem.voo ?
-                          "e voo " : ""}em conformidade com as diretrizes: `)}" 
+                        "e voo " : ""}em conformidade com as diretrizes: `)}" 
                       class="btn-confirm"
                       >
                         Iniciar triagem
@@ -303,13 +293,11 @@ router.get('/handleraprovacao', async (req, res) => {
                 </body>
               </html>
             `,
-          },
-        });
-      }
-
-      // tela de confirmacao para o aprovador
-      res.send(
-        `<!DOCTYPE html>
+                },
+            });
+        }
+        // tela de confirmacao para o aprovador
+        res.send(`<!DOCTYPE html>
         <html lang="pt-BR">
           <head>
             <meta charset="UTF-8" />
@@ -361,56 +349,50 @@ router.get('/handleraprovacao', async (req, res) => {
               </div>
             </div>
           </body>
-        </html>`
-      );
-      return;
-    } catch (err: any) {
-      console.error("Erro ao atualizar status:", err);
-      res.status(500).send("Erro interno ao atualizar status");
-      return;
+        </html>`);
+        return;
+    }
+    catch (err) {
+        console.error("Erro ao atualizar status:", err);
+        res.status(500).send("Erro interno ao atualizar status");
+        return;
     }
 });
-
-router.get('/handlervaloradiantado', async(req, res) => {
-  const docId = String(req.query.docId || "");
-
-  if (!docId) {
-    res.status(400).send("Parâmetro docId obrigatório");
-    return;
-  }
-
-  const novoStatus = "Valor adiantado";
-
-  try {
-    // atualiza o status
-    const viagemRef = db.collection("VIAGENS").doc(docId);
-    await viagemRef.update({status: novoStatus});
-
-    // lê dados da viagem
-    const viagemSnap = await viagemRef.get();
-    const viagem = viagemSnap.data() as Viagem;
-    if (!viagem) {
-      res.status(500).send("Viagem não encontrada após atualização");
-      return;
+router.get('/handlervaloradiantado', async (req, res) => {
+    const docId = String(req.query.docId || "");
+    if (!docId) {
+        res.status(400).send("Parâmetro docId obrigatório");
+        return;
     }
-    const snapshot = await db.collection("CONTRATOS").doc(viagem.contrato).get();
-    const contrato = snapshot.data() as Contrato;
-    if (!contrato) {
-      res.status(500).send("Não foi possivel obter os agentes do contrato");
-      return;
-    }
-
-    // notificacao para colaborador e agente emthos
-    await db.collection("mail").add({
-      to: [viagem.colaborador, contrato.agentes.preposto.email],
-      idViagem: viagem.id,
-      acaoViagem: "Adiantamento",
-      statusViagem: novoStatus,
-      agenteViagem: contrato.agentes.preposto.email,
-      message: {
-        subject: `Viagem ID ${docId} para ${viagem.destino} - ${novoStatus}`,
-        text: "",
-        html: `
+    const novoStatus = "Valor adiantado";
+    try {
+        // atualiza o status
+        const viagemRef = db.collection("VIAGENS").doc(docId);
+        await viagemRef.update({ status: novoStatus });
+        // lê dados da viagem
+        const viagemSnap = await viagemRef.get();
+        const viagem = viagemSnap.data();
+        if (!viagem) {
+            res.status(500).send("Viagem não encontrada após atualização");
+            return;
+        }
+        const snapshot = await db.collection("CONTRATOS").doc(viagem.contrato).get();
+        const contrato = snapshot.data();
+        if (!contrato) {
+            res.status(500).send("Não foi possivel obter os agentes do contrato");
+            return;
+        }
+        // notificacao para colaborador e agente emthos
+        await db.collection("mail").add({
+            to: [viagem.colaborador, contrato.agentes.preposto.email],
+            idViagem: viagem.id,
+            acaoViagem: "Adiantamento",
+            statusViagem: novoStatus,
+            agenteViagem: contrato.agentes.preposto.email,
+            message: {
+                subject: `Viagem ID ${docId} para ${viagem.destino} - ${novoStatus}`,
+                text: "",
+                html: `
           <!DOCTYPE html>
           <html>
             <head>
@@ -517,11 +499,10 @@ router.get('/handlervaloradiantado', async(req, res) => {
             </body>
           </html>
         `,
-      },
-    });
-
-    // tela de confirmacao para o aprovador
-    res.send(`
+            },
+        });
+        // tela de confirmacao para o aprovador
+        res.send(`
       <!DOCTYPE html>
       <html lang="pt-BR">
         <head>
@@ -578,62 +559,56 @@ router.get('/handlervaloradiantado', async(req, res) => {
             </div>
           </div>
         </body>
-      </html>`
-    );
-    return;
-  } catch (err: any) {
-    console.error("Erro ao atualizar status:", err);
-    res.status(500).send("Erro interno ao atualizar status");
-    return;
-  }
+      </html>`);
+        return;
+    }
+    catch (err) {
+        console.error("Erro ao atualizar status:", err);
+        res.status(500).send("Erro interno ao atualizar status");
+        return;
+    }
 });
-
-router.get('/handlerdescontoreembolso', async(req, res) => {
-  const docId = String(req.query.docId || "");
-  const acao = String(req.query.acao || "");
-
-  if (!docId || !acao) {
-    res.status(400).send("Parâmetros obrigatórios faltando");
-    return;
-  }
-
-  let novoStatus = "";
-  if (acao === "desconto") {
-    novoStatus = "Desconto programado";
-  } else if (acao === "reembolso") {
-    novoStatus = "Reembolso programado";
-  }
-
-  try {
-    // atualiza o status
-    const viagemRef = db.collection("VIAGENS").doc(docId);
-    await viagemRef.update({status: novoStatus});
-
-    // lê dados da viagem
-    const viagemSnap = await viagemRef.get();
-    const viagem = viagemSnap.data() as Viagem;
-    if (!viagem) {
-      res.status(500).send("Viagem não encontrada após atualização");
-      return;
+router.get('/handlerdescontoreembolso', async (req, res) => {
+    const docId = String(req.query.docId || "");
+    const acao = String(req.query.acao || "");
+    if (!docId || !acao) {
+        res.status(400).send("Parâmetros obrigatórios faltando");
+        return;
     }
-    const snapshot = await db.collection("CONTRATOS").doc(viagem.contrato).get();
-    const contrato = snapshot.data() as Contrato;
-    
-    if (!contrato) {
-      res.status(500).send("Não foi possivel obter os agentes do sistema");
-      return;
+    let novoStatus = "";
+    if (acao === "desconto") {
+        novoStatus = "Desconto programado";
     }
-
-    await db.collection("mail").add({
-      to: [viagem.colaborador, contrato.agentes.preposto.email],
-      idViagem: viagem.id,
-      acaoViagem: "Adiantamento",
-      statusViagem: novoStatus,
-      agenteViagem: contrato.agentes.preposto.email,
-      message: {
-        subject: `Viagem ID ${docId} para ${viagem.destino} - ${novoStatus}`,
-        text: "",
-        html: `
+    else if (acao === "reembolso") {
+        novoStatus = "Reembolso programado";
+    }
+    try {
+        // atualiza o status
+        const viagemRef = db.collection("VIAGENS").doc(docId);
+        await viagemRef.update({ status: novoStatus });
+        // lê dados da viagem
+        const viagemSnap = await viagemRef.get();
+        const viagem = viagemSnap.data();
+        if (!viagem) {
+            res.status(500).send("Viagem não encontrada após atualização");
+            return;
+        }
+        const snapshot = await db.collection("CONTRATOS").doc(viagem.contrato).get();
+        const contrato = snapshot.data();
+        if (!contrato) {
+            res.status(500).send("Não foi possivel obter os agentes do sistema");
+            return;
+        }
+        await db.collection("mail").add({
+            to: [viagem.colaborador, contrato.agentes.preposto.email],
+            idViagem: viagem.id,
+            acaoViagem: "Adiantamento",
+            statusViagem: novoStatus,
+            agenteViagem: contrato.agentes.preposto.email,
+            message: {
+                subject: `Viagem ID ${docId} para ${viagem.destino} - ${novoStatus}`,
+                text: "",
+                html: `
           <!DOCTYPE html>
           <html>
             <head>
@@ -740,11 +715,10 @@ router.get('/handlerdescontoreembolso', async(req, res) => {
             </body>
           </html>
         `,
-      },
-    });
-
-    // tela de confirmacao para o aprovador
-    res.send(`
+            },
+        });
+        // tela de confirmacao para o aprovador
+        res.send(`
       <!DOCTYPE html>
       <html lang="pt-BR">
         <head>
@@ -801,54 +775,48 @@ router.get('/handlerdescontoreembolso', async(req, res) => {
             </div>
           </div>
         </body>
-      </html>`
-    );
-    return;
-  } catch (err: any) {
-    console.error("Erro ao atualizar status:", err);
-    res.status(500).send("Erro interno ao atualizar status: "+err.message);
-    return;
-  }
+      </html>`);
+        return;
+    }
+    catch (err) {
+        console.error("Erro ao atualizar status:", err);
+        res.status(500).send("Erro interno ao atualizar status: " + err.message);
+        return;
+    }
 });
-
-router.get('/handleraprovaradiantamento', async(req, res) => {
-  const docId = String(req.query.docId || "");
-
-  if (!docId) {
-    res.status(400).send("Parâmetros obrigatórios faltando");
-    return;
-  }
-
-  try {
-    // lê dados da viagem
-    const viagemRef = db.collection("VIAGENS").doc(docId);
-    const viagemSnap = await viagemRef.get();
-    const viagem = viagemSnap.data() as Viagem;
-    if (!viagem) {
-      res.status(500).send("Viagem não encontrada");
-      return;
+router.get('/handleraprovaradiantamento', async (req, res) => {
+    const docId = String(req.query.docId || "");
+    if (!docId) {
+        res.status(400).send("Parâmetros obrigatórios faltando");
+        return;
     }
-    const snapshot = await db.collection("CONTRATOS").doc(viagem.contrato).get();
-    const contrato = snapshot.data() as Contrato;
-    
-    const snapCol = await db.collection("USUARIO").doc(viagem.colaborador).get();
-    const colaborador = snapCol.data() as Usuario;
-
-    if (!contrato || !colaborador) {
-      res.status(500).send("Não foi possivel obter os agentes do contrato");
-      return;
-    }
-
-    await db.collection("mail").add({
-      to: [contrato.agentes.financeiro.email, contrato.agentes.suplenteFinanceiro.email, contrato.agentes.preposto.email],
-      idViagem: viagem.id,
-      acaoViagem: "Adiantamento",
-      statusViagem: "Adiantamento enviado",
-      agenteViagem: contrato.agentes.preposto.email,
-      message: {
-        subject: `Adiantamento validado pelo preposto - viagem ID ${docId} contrato ${viagem.contrato}`,
-        text: "",
-        html: `
+    try {
+        // lê dados da viagem
+        const viagemRef = db.collection("VIAGENS").doc(docId);
+        const viagemSnap = await viagemRef.get();
+        const viagem = viagemSnap.data();
+        if (!viagem) {
+            res.status(500).send("Viagem não encontrada");
+            return;
+        }
+        const snapshot = await db.collection("CONTRATOS").doc(viagem.contrato).get();
+        const contrato = snapshot.data();
+        const snapCol = await db.collection("USUARIO").doc(viagem.colaborador).get();
+        const colaborador = snapCol.data();
+        if (!contrato || !colaborador) {
+            res.status(500).send("Não foi possivel obter os agentes do contrato");
+            return;
+        }
+        await db.collection("mail").add({
+            to: [contrato.agentes.financeiro.email, contrato.agentes.suplenteFinanceiro.email, contrato.agentes.preposto.email],
+            idViagem: viagem.id,
+            acaoViagem: "Adiantamento",
+            statusViagem: "Adiantamento enviado",
+            agenteViagem: contrato.agentes.preposto.email,
+            message: {
+                subject: `Adiantamento validado pelo preposto - viagem ID ${docId} contrato ${viagem.contrato}`,
+                text: "",
+                html: `
           <!DOCTYPE html>
           <html>
             <head>
@@ -967,11 +935,10 @@ router.get('/handleraprovaradiantamento', async(req, res) => {
             </body>
           </html>
         `,
-      },
-    });
-
-    // tela de confirmacao para o aprovador
-    res.send(`
+            },
+        });
+        // tela de confirmacao para o aprovador
+        res.send(`
       <!DOCTYPE html>
       <html lang="pt-BR">
         <head>
@@ -1028,14 +995,13 @@ router.get('/handleraprovaradiantamento', async(req, res) => {
             </div>
           </div>
         </body>
-      </html>`
-    );
-    return;
-  } catch (err: any) {
-    console.error("Erro ao atualizar status:", err);
-    res.status(500).send("Erro interno ao atualizar status: "+err.message);
-    return;
-  }
+      </html>`);
+        return;
+    }
+    catch (err) {
+        console.error("Erro ao atualizar status:", err);
+        res.status(500).send("Erro interno ao atualizar status: " + err.message);
+        return;
+    }
 });
-
-export default router;
+exports.default = router;
