@@ -26,9 +26,9 @@ export default class Rotinas {
             for (const viagemDoc of viagensFinalizando.docs) {
                 const viagemId = viagemDoc.id;
                 const prestacoesSnap = await db
-                .collection("PRESTACOES")
-                .where("idViagem", "==", viagemId)
-                .get();
+                    .collection("PRESTACOES")
+                    .where("idViagem", "==", viagemId)
+                    .get();
 
                 // 4) Se não existir nenhuma prestação, marca a viagem como pendente
                 if (prestacoesSnap.empty) {
@@ -43,9 +43,9 @@ export default class Rotinas {
                         statusViagem: "Pendente prestação de contas",
                         agenteViagem: viagemDoc.data().colaborador,
                         message: {
-                        subject: `Viagem ID ${viagemId} pendente prestação de contas`,
-                        text: "",
-                        html: `
+                            subject: `Viagem ID ${viagemId} pendente prestação de contas`,
+                            text: "",
+                            html: `
                             <!DOCTYPE html>
                             <html>
                                 <head>
@@ -159,7 +159,7 @@ export default class Rotinas {
             }
 
             // VERIFICA PENDENTE FINANCEIRO
-            const pendenteFinanceiro = await db
+            /* const pendenteFinanceiro = await db
                 .collection("VIAGENS")
                 .where("status", "==", "Pendente financeiro")
                 .get();
@@ -303,13 +303,13 @@ export default class Rotinas {
                         },
                     });
                 }
-            }
+            } */
 
             //VERIFICA CONCLUSAO
             const pendenteConclusao = await db
-            .collection("VIAGENS")
-            .where("status", "in", ['Desconto programado', 'Reembolso programado'])
-            .get();
+                .collection("VIAGENS")
+                .where("status", "in", ['Desconto programado', 'Reembolso programado'])
+                .get();
             for (const viagemDoc of pendenteConclusao.docs) {
                 const viagem = viagemDoc.data() as Viagem;
                 if (this.passouDezDias(viagem.dataVolta)) {
@@ -318,7 +318,7 @@ export default class Rotinas {
                     });
                 }
             }
-            
+
         } catch (err: any) {
             console.error(err);
             throw new Error("Erro ao executar: " + err.message);

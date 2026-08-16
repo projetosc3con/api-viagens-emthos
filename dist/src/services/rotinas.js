@@ -152,20 +152,23 @@ class Rotinas {
                 }
             }
             // VERIFICA PENDENTE FINANCEIRO
-            const pendenteFinanceiro = await db
+            /* const pendenteFinanceiro = await db
                 .collection("VIAGENS")
                 .where("status", "==", "Pendente financeiro")
                 .get();
+
+            
             for (const viagemDoc of pendenteFinanceiro.docs) {
-                const viagem = viagemDoc.data();
+                const viagem = viagemDoc.data() as Viagem;
                 const snap = await db
-                    .collection("PRESTACOES")
-                    .where("idViagem", "==", viagemDoc.id)
-                    .get();
+                .collection("PRESTACOES")
+                .where("idViagem", "==", viagemDoc.id)
+                .get();
+
                 if (!snap.empty) {
                     const prestacao = snap.docs[0].data();
                     const cData = await db.collection("CONTRATOS").doc(viagem.contrato).get();
-                    const contrato = cData.data();
+                    const contrato = cData.data() as Contrato;
                     await db.collection("mail").add({
                         to: [contrato.agentes.financeiro.email],
                         idViagem: viagemDoc.id,
@@ -173,9 +176,9 @@ class Rotinas {
                         statusViagem: "Pendente financeiro",
                         agenteViagem: contrato.agentes.financeiro.nome,
                         message: {
-                            subject: `Viagem ID ${viagemDoc.id} pendente financeiro`,
-                            text: "",
-                            html: `
+                        subject: `Viagem ID ${viagemDoc.id} pendente financeiro`,
+                        text: "",
+                        html: `
                             <!DOCTYPE html>
                             <html>
                             <head>
@@ -192,7 +195,7 @@ class Rotinas {
                             background-repeat: no-repeat;
                             background-size: cover;
                             position: relative;
-                            background-image: url(https://firebasestorage.googleapis.com/v0/b/viagens-emthos.firebasestorage.app/o/assets%2Fbackground-emthos.jpeg?alt=media&token=affc8676-313d-483b-b5e4-e57149c9867e);    
+                            background-image: url(https://firebasestorage.googleapis.com/v0/b/viagens-emthos.firebasestorage.app/o/assets%2Fbackground-emthos.jpeg?alt=media&token=affc8676-313d-483b-b5e4-e57149c9867e);
                             padding: 0;
                             color: #333;
                             }
@@ -248,10 +251,11 @@ class Rotinas {
                             <h2 style="margin-top:0;">Olá ${contrato.agentes.financeiro.nome},</h2>
                             <p>
                             ${prestacao.valorDiferenca > 0 ?
-                                "Programar desconto no valor de R$ " + prestacao.valorDiferenca :
+                                "Programar desconto no valor de R$ " + prestacao.valorDiferenca:
                                 prestacao.valorDiferenca === 0 ?
-                                    "Sem diferença entre prestação e adiantamento" :
-                                    "Programar reembolso no valor de R$ " + (prestacao.valorDiferenca * -1)}
+                                "Sem diferença entre prestação e adiantamento":
+                                "Programar reembolso no valor de R$ " + (prestacao.valorDiferenca * -1)
+                            }
                             </p>
                             <table class="info-table">
                             <tr>
@@ -292,7 +296,7 @@ class Rotinas {
                         },
                     });
                 }
-            }
+            } */
             //VERIFICA CONCLUSAO
             const pendenteConclusao = await db
                 .collection("VIAGENS")
