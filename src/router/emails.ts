@@ -927,7 +927,7 @@ router.get('/handleraprovaradiantamento', async(req, res) => {
                   </tr>
                   <tr>
                       <th>Centro de custo:</th>
-                      <td>${viagem.contrato === '4600685412' ? '53' : '47'}</td>
+                      <td>${viagem.centroCusto}</td>
                   </tr>
                   <tr>
                     <th>Colaborador:</th>
@@ -959,8 +959,8 @@ router.get('/handleraprovaradiantamento', async(req, res) => {
                   </tr>
                 </table>
                 <div class="button-group">
-                  <a href="https://api-viagens-emthos.vercel.app/emails/handlervaloradiantado?docId=${docId}" class="btn-confirm" >
-                    Registrar como valor adiantado
+                  <a href="https://viagens-emthos.web.app/viagens/${docId}" class="btn-confirm">
+                    Acessar viagem para marcar como adiantado
                   </a>
                 </div>
               </div>
