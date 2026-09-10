@@ -308,7 +308,7 @@ export default class Rotinas {
             //VERIFICA CONCLUSAO
             const pendenteConclusao = await db
                 .collection("VIAGENS")
-                .where("status", "in", ['Desconto programado', 'Reembolso programado'])
+                .where("status", "in", ['Desconto programado', 'Reembolso programado', 'Reembolso pago'])
                 .get();
             for (const viagemDoc of pendenteConclusao.docs) {
                 const viagem = viagemDoc.data() as Viagem;
