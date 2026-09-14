@@ -312,7 +312,7 @@ export default class Rotinas {
                 .get();
             for (const viagemDoc of pendenteConclusao.docs) {
                 const viagem = viagemDoc.data() as Viagem;
-                if (this.passouDezDias(viagem.dataVolta)) {
+                if (this.passouDoisDias(viagem.dataVolta)) {
                     await viagemDoc.ref.update({
                         status: "Concluída",
                     });
@@ -331,11 +331,11 @@ export default class Rotinas {
         return new Date(ano, mes - 1, dia);
     }
 
-    static passouDezDias(dataVolta: string): boolean {
+    static passouDoisDias(dataVolta: string): boolean {
         const dataConvertida = this.parseDataBr(dataVolta);
         const hoje = new Date();
         const diffMs = hoje.getTime() - dataConvertida.getTime();
         const diffDias = diffMs / (1000 * 60 * 60 * 24);
-        return diffDias >= 10;
+        return diffDias >= 2;
     }
 }
