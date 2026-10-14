@@ -799,6 +799,8 @@ router.get('/handleraprovaradiantamento', async (req, res) => {
             res.status(500).send("Viagem não encontrada");
             return;
         }
+        //atualiza status da viagem
+        await viagemRef.update({ status: "Adiantamento validado" });
         const snapshot = await db.collection("CONTRATOS").doc(viagem.contrato).get();
         const contrato = snapshot.data();
         const snapCol = await db.collection("USUARIO").doc(viagem.colaborador).get();

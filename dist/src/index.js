@@ -13,6 +13,7 @@ const viagens_1 = __importDefault(require("./router/viagens"));
 const emails_1 = __importDefault(require("./router/emails"));
 const usuarios_1 = __importDefault(require("./router/usuarios"));
 const prestacoes_1 = __importDefault(require("./router/prestacoes"));
+const rotinas_1 = __importDefault(require("./router/rotinas"));
 dotenv_1.default.config();
 const app = (0, express_1.default)();
 const port = process.env.PORT || 3000;
@@ -25,6 +26,8 @@ app.use('/viagens', viagens_1.default);
 app.use('/emails', emails_1.default);
 app.use('/usuarios', usuarios_1.default);
 app.use('/prestacoes', prestacoes_1.default);
+app.use('/rotinas', rotinas_1.default);
+app.use('/rotina', rotinas_1.default);
 app.get('/', (_req, res) => {
     res.send('🔥 API rodando localmente!');
 });

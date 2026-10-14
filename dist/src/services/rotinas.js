@@ -300,11 +300,11 @@ class Rotinas {
             //VERIFICA CONCLUSAO
             const pendenteConclusao = await db
                 .collection("VIAGENS")
-                .where("status", "in", ['Desconto programado', 'Reembolso programado'])
+                .where("status", "in", ['Desconto programado', 'Reembolso programado', 'Reembolso pago'])
                 .get();
             for (const viagemDoc of pendenteConclusao.docs) {
                 const viagem = viagemDoc.data();
-                if (this.passouDezDias(viagem.dataVolta)) {
+                if (this.passouDoisDias(viagem.dataVolta)) {
                     await viagemDoc.ref.update({
                         status: "Concluída",
                     });
@@ -320,12 +320,12 @@ class Rotinas {
         const [dia, mes, ano] = data.split('/').map(Number);
         return new Date(ano, mes - 1, dia);
     }
-    static passouDezDias(dataVolta) {
+    static passouDoisDias(dataVolta) {
         const dataConvertida = this.parseDataBr(dataVolta);
         const hoje = new Date();
         const diffMs = hoje.getTime() - dataConvertida.getTime();
         const diffDias = diffMs / (1000 * 60 * 60 * 24);
-        return diffDias >= 10;
+        return diffDias >= 2;
     }
 }
 exports.default = Rotinas;
