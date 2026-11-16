@@ -319,6 +319,21 @@ export default class Rotinas {
                 }
             }
 
+            // VERIFICA CONCLUSAO CONTRATO 4600685412 (PENDENTE PRESTAÇÃO DE CONTAS >= 3 DIAS)
+            const pendentePrestacaoContrato = await db
+                .collection("VIAGENS")
+                .where("contrato", "==", "4600685412")
+                .where("status", "==", "Pendente prestação de contas")
+                .get();
+            for (const viagemDoc of pendentePrestacaoContrato.docs) {
+                const viagem = viagemDoc.data() as Viagem;
+                if (this.passouTresDias(viagem.dataVolta)) {
+                    await viagemDoc.ref.update({
+                        status: "Concluída",
+                    });
+                }
+            }
+
         } catch (err: any) {
             console.error(err);
             throw new Error("Erro ao executar: " + err.message);
@@ -337,5 +352,13 @@ export default class Rotinas {
         const diffMs = hoje.getTime() - dataConvertida.getTime();
         const diffDias = diffMs / (1000 * 60 * 60 * 24);
         return diffDias >= 2;
+    }
+
+    static passouTresDias(dataVolta: string): boolean {
+        const dataConvertida = this.parseDataBr(dataVolta);
+        const hoje = new Date();
+        const diffMs = hoje.getTime() - dataConvertida.getTime();
+        const diffDias = diffMs / (1000 * 60 * 60 * 24);
+        return diffDias >= 3;
     }
 }
